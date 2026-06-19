@@ -1,306 +1,176 @@
 # ⚽ Football Match Outcome Prediction System
 
-## Overview
+## 📌 Overview
 
-This project predicts football match outcomes (**Home Win / Draw / Away Win**) using historical match data, feature engineering, bookmaker odds, and machine learning models.
+This project is an end-to-end machine learning system that predicts football match outcomes (Home Win / Draw / Away Win) using historical match data, engineered statistical features, and bookmaker odds.
 
-The project was built to investigate whether machine learning models can outperform bookmaker odds when predicting football match results.
-
----
-
-## Objectives
-
-* Build a complete football prediction pipeline.
-* Engineer meaningful pre-match features from historical data.
-* Train and evaluate multiple machine learning models.
-* Compare model performance against bookmaker odds.
-* Analyze whether machine learning adds predictive value beyond betting markets.
+The objective of this project is to evaluate whether machine learning models can extract predictive signals beyond those already embedded in betting market odds.
 
 ---
 
-## Dataset
+## 📊 Live Prediction Example
 
-The project uses historical football match data covering multiple Premier League seasons.
-
-Each match contains information such as:
-
-* Match date
-* Home team
-* Away team
-* Goals scored
-* Match result
-* Bookmaker odds
-* Match statistics
-
-The target variable is:
-
-* **Home** = Home team wins
-* **Draw** = Match ends in a draw
-* **Away** = Away team wins
+![Prediction Screenshot](assets/prediction.png)
 
 ---
 
-## Feature Engineering
+## 🧠 Problem Statement
 
-The model uses only information available **before a match starts**.
+Predicting football match outcomes is a complex task due to:
 
-### Team Strength (ELO)
+- High randomness in sports events  
+- Strong influence of external factors (injuries, tactics, morale)  
+- Highly efficient betting markets  
 
-An ELO rating system is maintained for each team.
-
-Features:
-
-* Home ELO
-* Away ELO
-* ELO Difference
+This project investigates whether structured historical data and machine learning can meaningfully compete with bookmaker-implied probabilities.
 
 ---
 
-### Team Form
+## 🔄 System Pipeline
 
-Exponential time-decay weighting is used to emphasize recent matches.
-
-Features include:
-
-* Recent points
-* Goal difference
-* Goals scored
-* Goals conceded
-
----
-
-### Rest and Scheduling
-
-Features:
-
-* Home team days of rest
-* Away team days of rest
-* Rest difference
+1. Raw match data ingestion from multiple seasons  
+2. Data cleaning and normalization  
+3. Feature engineering from historical performance  
+4. Construction of predictive datasets  
+5. Model training using multiple algorithms  
+6. Time-based evaluation to simulate real-world prediction  
+7. Comparison against bookmaker odds baseline  
 
 ---
 
-### Head-to-Head Statistics
+## 🔧 Feature Engineering
 
-Historical performance between two teams:
+All features are strictly computed using **pre-match information only**, ensuring no data leakage.
 
-* Previous meetings
-* Average goals
-* Average points
+### ⚡ Team Strength (ELO System)
+- Home team ELO rating  
+- Away team ELO rating  
+- ELO difference  
 
----
+### 📈 Team Form Indicators
+- Recent match performance (weighted decay)  
+- Goals scored and conceded  
+- Goal difference trends  
 
-### Market Features
+### ⏱️ Rest & Fatigue Metrics
+- Days of rest for home team  
+- Days of rest for away team  
+- Rest advantage differential  
 
-Bookmaker odds are converted into normalized implied probabilities.
+### 🤝 Head-to-Head Statistics
+- Historical encounters between teams  
+- Average goals and points in matchups  
 
-Features:
-
-* Home win probability
-* Draw probability
-* Away win probability
-* Market confidence
-* Probability spread
-
----
-
-## Models Evaluated
-
-The following models were tested:
-
-### Logistic Regression
-
-A linear baseline model used to evaluate whether simple relationships exist within the feature set.
-
-### LightGBM
-
-Gradient boosting model designed for structured tabular data.
-
-### XGBoost
-
-Boosted decision tree model commonly used in predictive analytics competitions.
-
-### Decision Tree
-
-Interpretable baseline model.
+### 💰 Market-Based Features
+- Bookmaker implied probabilities  
+- Market confidence score  
+- Probability spread between outcomes  
 
 ---
 
-## Evaluation Methodology
+## 🤖 Machine Learning Models
 
-### Time-Based Train/Test Split
+The following models were evaluated:
 
-To avoid future information leakage:
-
-* First 80% of matches used for training
-* Last 20% used for testing
-
----
-
-### Time-Series Cross Validation
-
-Validation uses time-aware splits rather than random shuffling.
-
-This better reflects real-world forecasting conditions.
+- Logistic Regression (baseline linear model)  
+- LightGBM (gradient boosting model)  
+- XGBoost (boosted tree ensemble)  
+- Decision Tree (interpretable baseline)  
 
 ---
 
-### Metrics
+## 📊 Evaluation Methodology
 
-Models are evaluated using:
+### ⏳ Time-Based Splitting
 
-* Accuracy
-* Log Loss
+To simulate real-world prediction conditions:
 
-Accuracy measures prediction correctness.
+- Training set: First 80% of chronological matches  
+- Test set: Last 20% of chronological matches  
 
-Log Loss evaluates probability quality and confidence calibration.
-
----
-
-## Results
-
-### Odds-Only Baseline
-
-Bookmaker implied probabilities provide a strong benchmark.
-
-Approximate performance:
-
-* Accuracy: ~51%
-* Log Loss: ~0.995
+This ensures no future information leakage.
 
 ---
 
-### Machine Learning Models
+### 📏 Metrics Used
 
-Observed accuracy range:
-
-* Logistic Regression: ~46–48%
-* LightGBM: ~44–45%
-* XGBoost: ~41–45%
-* Decision Tree: ~37%
+- Accuracy → Correct match outcome prediction  
+- Log Loss → Probability quality and calibration  
 
 ---
 
-### Hybrid Model
+## 📈 Results Summary
 
-A weighted combination of:
+### 🏦 Bookmaker Odds Baseline
+- Accuracy: ~51%  
+- Strongest single predictive signal  
 
-* Bookmaker probabilities
-* Machine learning probabilities
+### 🤖 Machine Learning Models
 
-Best configuration:
-
-* 90% bookmaker odds
-* 10% LightGBM probabilities
-
-This produced only a marginal improvement in log loss.
-
----
-
-## Key Findings
-
-### Bookmaker Odds Are Extremely Strong Predictors
-
-The betting market already captures a large amount of available information.
-
-Examples:
-
-* Team strength
-* Recent form
-* Injuries
-* Public sentiment
-* Expert analysis
+- Logistic Regression: ~46–48%  
+- LightGBM: ~44–45%  
+- XGBoost: ~41–45%  
+- Decision Tree: ~37%  
 
 ---
 
-### Machine Learning Adds Limited Signal
+## 🔍 Key Findings
 
-Models learned meaningful patterns but were unable to significantly outperform bookmaker odds.
-
-The strongest results came from combining market probabilities with machine learning predictions.
-
----
-
-### Data Quality Matters More Than Model Complexity
-
-The project demonstrates that additional information sources are likely required to improve performance, including:
-
-* Expected Goals (xG)
-* Lineups
-* Injuries
-* Player availability
-* Advanced event data
+- Bookmaker odds consistently outperform standalone ML models  
+- Betting markets already incorporate extensive hidden information  
+- Machine learning adds limited additional predictive power  
+- Best performance is achieved via hybrid weighting (odds + ML)  
+- Data quality and external signals matter more than model complexity  
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
-```text
+
 football-prediction-system/
 │
 ├── data/
-│   └── raw/
-│
+│ └── raw/
 ├── src/
-│   ├── data_collection.py
-│   ├── data_cleaning.py
-│   ├── feature_engineering.py
-│   ├── model_training.py
-│   └── predict.py
-│
+│ ├── data_collection.py
+│ ├── data_cleaning.py
+│ ├── feature_engineering.py
+│ ├── model_training.py
+│ └── predict.py
 ├── models/
-│
+├── assets/
+│ └── prediction.png
 ├── README.md
-└── requirements.txt
-```
+├── requirements.txt
+
 
 ---
 
-## Installation
+## ⚙️ Installation
 
 ```bash
 pip install -r requirements.txt
-```
-
----
-
-## Training
-
-```bash
+🚀 Training the Model
 python -m src.model_training data/raw/
-```
-
----
-
-## Prediction
-
-```bash
+🔮 Making Predictions
 python -m src.predict data/raw/ "Home Team" "Away Team"
-```
+🚀 Future Improvements
+Integration of Expected Goals (xG) data
+Player injury and lineup information
+Advanced probability calibration techniques
+Model ensembling strategies
+Deployment as a web application (Streamlit/Django)
+Real-time match prediction system
+🧠 Key Learnings
 
----
+This project demonstrates:
 
-## Future Improvements
+End-to-end machine learning pipeline design
+Feature engineering for structured sports data
+Time-series validation techniques
+Real-world limitations of predictive modeling
+Importance of strong baselines (bookmaker odds)
+Practical challenges in sports analytics
+📌 Disclaimer
 
-* Expected Goals (xG)
-* Injury and lineup information
-* Probability calibration improvements
-* Model ensembling
-* Interactive web application
-* Live match prediction dashboard
-
----
-
-## What I Learned
-
-Through this project I learned:
-
-* Data cleaning and preprocessing
-* Feature engineering
-* ELO rating systems
-* Time-series validation
-* Model evaluation
-* Probability calibration
-* Sports analytics workflows
-* The importance of strong real-world baselines
-
+This project is for educational and research purposes only. It does not guarantee prediction accuracy and should not be used for betting or financial decisions.
