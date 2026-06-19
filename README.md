@@ -1,57 +1,306 @@
-# Football Match Prediction
+# ⚽ Football Match Outcome Prediction System
 
-This project trains a simple model to predict the outcome of a football match: `home`, `draw`, or `away`.
+## Overview
 
-## Project structure
-- `data/raw/` — raw match data CSV files
-- `src/` — Python source code
-- `requirements.txt` — Python dependencies
+This project predicts football match outcomes (**Home Win / Draw / Away Win**) using historical match data, feature engineering, bookmaker odds, and machine learning models.
 
-## What changed
-- The model now uses historical team statistics instead of future match scores.
-- The prediction pipeline computes pre-match features from the last 5 matches and overall club history.
-- Raw E0 season files are now normalized automatically.
-- Model and encoder are saved to `models/` so predictions can be made later.
+The project was built to investigate whether machine learning models can outperform bookmaker odds when predicting football match results.
 
-## How it works
-1. `src/model_training.py` reads raw match CSV files or a folder of CSV files.
-2. It normalizes raw column names such as `Date`, `HomeTeam`, `AwayTeam`, `FTHG`, and `FTAG`.
-3. It cleans the data and adds the target label.
-4. The feature builder computes recent and overall team form from previous matches.
-5. A `RandomForestClassifier` model is trained and saved.
-6. `src/predict.py` loads the saved model and predicts a new match using team names and competition.
+---
 
-## Install dependencies
+## Objectives
+
+* Build a complete football prediction pipeline.
+* Engineer meaningful pre-match features from historical data.
+* Train and evaluate multiple machine learning models.
+* Compare model performance against bookmaker odds.
+* Analyze whether machine learning adds predictive value beyond betting markets.
+
+---
+
+## Dataset
+
+The project uses historical football match data covering multiple Premier League seasons.
+
+Each match contains information such as:
+
+* Match date
+* Home team
+* Away team
+* Goals scored
+* Match result
+* Bookmaker odds
+* Match statistics
+
+The target variable is:
+
+* **Home** = Home team wins
+* **Draw** = Match ends in a draw
+* **Away** = Away team wins
+
+---
+
+## Feature Engineering
+
+The model uses only information available **before a match starts**.
+
+### Team Strength (ELO)
+
+An ELO rating system is maintained for each team.
+
+Features:
+
+* Home ELO
+* Away ELO
+* ELO Difference
+
+---
+
+### Team Form
+
+Exponential time-decay weighting is used to emphasize recent matches.
+
+Features include:
+
+* Recent points
+* Goal difference
+* Goals scored
+* Goals conceded
+
+---
+
+### Rest and Scheduling
+
+Features:
+
+* Home team days of rest
+* Away team days of rest
+* Rest difference
+
+---
+
+### Head-to-Head Statistics
+
+Historical performance between two teams:
+
+* Previous meetings
+* Average goals
+* Average points
+
+---
+
+### Market Features
+
+Bookmaker odds are converted into normalized implied probabilities.
+
+Features:
+
+* Home win probability
+* Draw probability
+* Away win probability
+* Market confidence
+* Probability spread
+
+---
+
+## Models Evaluated
+
+The following models were tested:
+
+### Logistic Regression
+
+A linear baseline model used to evaluate whether simple relationships exist within the feature set.
+
+### LightGBM
+
+Gradient boosting model designed for structured tabular data.
+
+### XGBoost
+
+Boosted decision tree model commonly used in predictive analytics competitions.
+
+### Decision Tree
+
+Interpretable baseline model.
+
+---
+
+## Evaluation Methodology
+
+### Time-Based Train/Test Split
+
+To avoid future information leakage:
+
+* First 80% of matches used for training
+* Last 20% used for testing
+
+---
+
+### Time-Series Cross Validation
+
+Validation uses time-aware splits rather than random shuffling.
+
+This better reflects real-world forecasting conditions.
+
+---
+
+### Metrics
+
+Models are evaluated using:
+
+* Accuracy
+* Log Loss
+
+Accuracy measures prediction correctness.
+
+Log Loss evaluates probability quality and confidence calibration.
+
+---
+
+## Results
+
+### Odds-Only Baseline
+
+Bookmaker implied probabilities provide a strong benchmark.
+
+Approximate performance:
+
+* Accuracy: ~51%
+* Log Loss: ~0.995
+
+---
+
+### Machine Learning Models
+
+Observed accuracy range:
+
+* Logistic Regression: ~46–48%
+* LightGBM: ~44–45%
+* XGBoost: ~41–45%
+* Decision Tree: ~37%
+
+---
+
+### Hybrid Model
+
+A weighted combination of:
+
+* Bookmaker probabilities
+* Machine learning probabilities
+
+Best configuration:
+
+* 90% bookmaker odds
+* 10% LightGBM probabilities
+
+This produced only a marginal improvement in log loss.
+
+---
+
+## Key Findings
+
+### Bookmaker Odds Are Extremely Strong Predictors
+
+The betting market already captures a large amount of available information.
+
+Examples:
+
+* Team strength
+* Recent form
+* Injuries
+* Public sentiment
+* Expert analysis
+
+---
+
+### Machine Learning Adds Limited Signal
+
+Models learned meaningful patterns but were unable to significantly outperform bookmaker odds.
+
+The strongest results came from combining market probabilities with machine learning predictions.
+
+---
+
+### Data Quality Matters More Than Model Complexity
+
+The project demonstrates that additional information sources are likely required to improve performance, including:
+
+* Expected Goals (xG)
+* Lineups
+* Injuries
+* Player availability
+* Advanced event data
+
+---
+
+## Project Structure
+
+```text
+football-prediction-system/
+│
+├── data/
+│   └── raw/
+│
+├── src/
+│   ├── data_collection.py
+│   ├── data_cleaning.py
+│   ├── feature_engineering.py
+│   ├── model_training.py
+│   └── predict.py
+│
+├── models/
+│
+├── README.md
+└── requirements.txt
+```
+
+---
+
+## Installation
+
 ```bash
 pip install -r requirements.txt
 ```
 
-## Merge raw data
-```bash
-python -m src.merge_data data/raw/ --output data/raw/merged_matches.csv
-```
+---
 
-## Train the model
+## Training
+
 ```bash
 python -m src.model_training data/raw/
 ```
 
-This command automatically creates `data/raw/merged_matches.csv` when the input path is a folder.
+---
 
-## Predict a match
+## Prediction
+
 ```bash
-python -m src.predict data/raw/ "Home Team" "Away Team" --competition "Premier League"
+python -m src.predict data/raw/ "Home Team" "Away Team"
 ```
 
-## What to expect
-- The training script runs 5-fold cross-validation and prints mean accuracy.
-- It also evaluates the final model on the last 20% of the dataset.
-- Prediction output includes the home team, away team, competition, and probability scores.
+---
 
-## Notes
-- The training path can be a single CSV file or a folder containing many CSV files.
-- The project will combine all CSV files in the folder automatically.
-- The loader now accepts raw E0-style files and normalizes columns.
-- The training data must still include: `date`, `home_team`, `away_team`, `home_goals`, `away_goals`.
-- If a file has raw E0 naming (like `FTHG` and `FTAG`), the project renames them automatically.
-- If a team has no history in the data, the model uses zeros for recent form.
+## Future Improvements
+
+* Expected Goals (xG)
+* Injury and lineup information
+* Probability calibration improvements
+* Model ensembling
+* Interactive web application
+* Live match prediction dashboard
+
+---
+
+## What I Learned
+
+Through this project I learned:
+
+* Data cleaning and preprocessing
+* Feature engineering
+* ELO rating systems
+* Time-series validation
+* Model evaluation
+* Probability calibration
+* Sports analytics workflows
+* The importance of strong real-world baselines
+
